@@ -7,15 +7,15 @@ export default function ScanPage() {
   const [result, setResult] = useState("")
   const [status, setStatus] = useState("")
   const [reason, setReason] = useState("")
-  const [student, setStudent] = useState(null)
+  const [student, setStudent] = useState<any>(null)
   const [animate, setAnimate] = useState("")
 
-  const scannerRef = useRef(null)
-  const isRunningRef = useRef(false)
-  const scannedRef = useRef(false)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
+  const isRunningRef = useRef<boolean>(false)
+  const scannedRef = useRef<boolean>(false)
 
-  const successSound = useRef(null)
-  const errorSound = useRef(null)
+  const successSound = useRef<HTMLAudioElement | null>(null)
+  const errorSound = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     if (scannerRef.current) return
@@ -39,14 +39,17 @@ export default function ScanPage() {
             setResult(decodedText)
 
             try {
-              const res = await fetch("http://127.0.0.1:8000/api/check-attendance/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  matric_number: decodedText,
-                  course_code: "CSC101",
-                }),
-              })
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/check-attendance/`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    matric_number: decodedText,
+                    course_code: "CSC101",
+                  }),
+                }
+              )
 
               const data = await res.json()
 
@@ -55,10 +58,10 @@ export default function ScanPage() {
               setStudent(data.student || null)
 
               if (data.status === "granted") {
-                successSound.current.play()
+                successSound.current?.play()
                 setAnimate("success")
               } else {
-                errorSound.current.play()
+                errorSound.current?.play()
                 setAnimate("error")
               }
 
@@ -67,7 +70,7 @@ export default function ScanPage() {
             } catch {
               setStatus("error")
               setReason("Network error")
-              errorSound.current.play()
+              errorSound.current?.play()
               setAnimate("error")
             }
 
@@ -75,6 +78,11 @@ export default function ScanPage() {
               scannerRef.current.stop().catch(() => {})
               isRunningRef.current = false
             }
+          },
+
+          // ✅ FIXED: 4th argument (error callback)
+          (errorMessage) => {
+            console.log("Scan error:", errorMessage)
           }
         )
 
@@ -105,8 +113,15 @@ export default function ScanPage() {
       await scannerRef.current.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 350 },
-        async () => {}
+
+        async () => {},
+
+        // ✅ FIXED: 4th argument here too
+        (errorMessage) => {
+          console.log("Scan error:", errorMessage)
+        }
       )
+
       isRunningRef.current = true
     }
   }
@@ -114,7 +129,6 @@ export default function ScanPage() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative">
 
-      {/* 🔥 FLASH OVERLAY */}
       {animate === "success" && (
         <div className="absolute inset-0 bg-green-500 opacity-20 animate-pulse" />
       )}
@@ -122,17 +136,14 @@ export default function ScanPage() {
         <div className="absolute inset-0 bg-red-500 opacity-20 animate-pulse" />
       )}
 
-      {/* HEADER */}
       <h1 className="text-2xl font-bold mb-4 tracking-wide">
         EXAM GATE SCANNER
       </h1>
 
-      {/* SCANNER */}
       <div className="w-full max-w-xl border-2 border-gray-700 rounded-xl overflow-hidden">
         <div id="reader" style={{ minHeight: 400 }} />
       </div>
 
-      {/* STATUS DISPLAY */}
       {status && (
         <div className={`mt-6 text-3xl font-extrabold tracking-wider ${
           status === "granted" ? "text-green-400" : "text-red-400"
@@ -141,31 +152,24 @@ export default function ScanPage() {
         </div>
       )}
 
-      {/* REASON */}
       {reason && (
         <p className="text-red-400 mt-2 text-sm">
           {reason}
         </p>
       )}
 
-      {/* STUDENT CARD */}
       {student && (
         <div className="mt-6 bg-gray-900 border border-gray-700 p-5 rounded-xl w-full max-w-md">
 
           <div className="flex items-center gap-4 mb-4">
-            {/* <img
-              src={student.image || "/default.jpeg"}
-              className="w-16 h-16 rounded-full border border-gray-600 object-cover"
-            /> */}
-
             <img
-                src={
-                  student.image
-                    ? `http://127.0.0.1:8000${student.image}`
-                    : "/default.png"
-                }
-                className="w-16 h-16 rounded-full border border-gray-600 object-cover"
-              />
+              src={
+                student.image
+                  ? `${process.env.NEXT_PUBLIC_API_URL}${student.image}`
+                  : "/default.png"
+              }
+              className="w-16 h-16 rounded-full border border-gray-600 object-cover"
+            />
 
             <div>
               <h2 className="font-bold text-lg">{student.name}</h2>
@@ -179,7 +183,7 @@ export default function ScanPage() {
           <div className="mt-2">
             <strong className="text-sm">Courses:</strong>
             <div className="flex flex-wrap gap-2 mt-1">
-              {student.courses?.map((c, i) => (
+              {student.courses?.map((c: string, i: number) => (
                 <span
                   key={i}
                   className="bg-gray-800 px-2 py-1 text-xs rounded border border-gray-600"
@@ -192,7 +196,6 @@ export default function ScanPage() {
         </div>
       )}
 
-      {/* BUTTON */}
       <button
         onClick={handleRescan}
         className="mt-6 bg-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
@@ -203,4 +206,3 @@ export default function ScanPage() {
     </div>
   )
 }
-
