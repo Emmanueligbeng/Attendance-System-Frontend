@@ -9,6 +9,8 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
 
+const API = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Dashboard() {
   const router = useRouter();
 
@@ -44,7 +46,7 @@ export default function Dashboard() {
     const refresh = localStorage.getItem("refresh");
     if (!refresh) throw new Error("No refresh token");
 
-    const res = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
+    const res = await fetch(`${API}/api/token/refresh/`, {  // ✅ fixed
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh })
@@ -72,7 +74,7 @@ export default function Dashboard() {
         return;
       }
 
-      let res = await fetch("http://127.0.0.1:8000/api/get-attendance/", {
+      let res = await fetch(`${API}/api/get-attendance/`, {  // ✅ fixed
         headers: { Authorization: `Bearer ${token}` },
         signal: controller.signal
       });
@@ -80,7 +82,7 @@ export default function Dashboard() {
       if (res.status === 401) {
         try {
           token = await refreshAccessToken();
-          res = await fetch("http://127.0.0.1:8000/api/get-attendance/", {
+          res = await fetch(`${API}/api/get-attendance/`, {  // ✅ fixed
             headers: { Authorization: `Bearer ${token}` },
             signal: controller.signal
           });
@@ -134,7 +136,6 @@ export default function Dashboard() {
 
   const analytics = useMemo(() => {
     const total = data.length;
-
     const granted = data.filter(i => i.status?.toLowerCase() === "granted").length;
     const denied = data.filter(i => i.status?.toLowerCase() === "denied").length;
     const absent = data.filter(i => i.status?.toLowerCase() === "absent").length;
@@ -163,7 +164,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem("access");
 
-      const res = await fetch("http://127.0.0.1:8000/api/export/", {
+      const res = await fetch(`${API}/api/export/`, {  // ✅ fixed
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -209,9 +210,9 @@ export default function Dashboard() {
             ⬇ Export Excel
           </button>
 
-          {/* <button onClick={logout} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">
+          <button onClick={logout} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">
             Logout
-          </button> */}
+          </button>
 
           <span className="text-green-400 text-sm font-mono">● LIVE</span>
         </div>
