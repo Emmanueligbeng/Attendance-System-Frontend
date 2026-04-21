@@ -28,7 +28,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/signup/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/signup/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -59,21 +59,21 @@ export default function Signup() {
 
         <input
           placeholder="Username"
-          className="w-full mb-3 p-2 rounded bg-gray-800"
+          className="w-full mb-3 p-2 rounded bg-gray-800 outline-none"
           onChange={(e) => setForm({ ...form, username: e.target.value })}
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full mb-3 p-2 rounded bg-gray-800"
+          className="w-full mb-3 p-2 rounded bg-gray-800 outline-none"
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
 
         <input
           type="password"
           placeholder="Confirm Password"
-          className="w-full mb-4 p-2 rounded bg-gray-800"
+          className="w-full mb-4 p-2 rounded bg-gray-800 outline-none"
           onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
         />
 
