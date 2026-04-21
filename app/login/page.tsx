@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/login/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -32,7 +32,6 @@ export default function Login() {
       if (res.ok) {
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
-
         router.push("/dashboard");
       } else {
         alert(data.error || "Login failed");
@@ -73,7 +72,6 @@ export default function Login() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
-        {/* 🔗 LINKS */}
         <div className="flex justify-between mt-4 text-sm text-gray-400">
           <span
             className="cursor-pointer hover:text-white"
